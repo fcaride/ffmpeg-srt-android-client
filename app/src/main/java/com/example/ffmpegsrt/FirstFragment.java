@@ -39,7 +39,7 @@ public class FirstFragment extends Fragment {
                     }
                 });
 
-                t.start();
+                //t.start();
             }
         });
     }

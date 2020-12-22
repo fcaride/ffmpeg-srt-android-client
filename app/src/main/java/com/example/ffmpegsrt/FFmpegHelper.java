@@ -23,7 +23,7 @@ public class FFmpegHelper {
 
 
 
-        long executionId = FFmpeg.executeAsync("-f android_camera -video_size hd720 -i 0:0 -r 30 -f h264 udp://127.0.0.1:1234", new ExecuteCallback() {
+        long executionId = FFmpeg.executeAsync("-f android_camera -video_size hd720 -input_queue_size 60 -i 0:0 -r 30 -f h264 udp://192.168.1.102:1235", new ExecuteCallback() {
             @Override
             public void apply(final long executionId, final int returnCode) {
                 if (returnCode == 1) {

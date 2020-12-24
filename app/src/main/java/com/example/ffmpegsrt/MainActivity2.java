@@ -13,6 +13,7 @@ import com.arthenica.mobileffmpeg.Config;
 import com.arthenica.mobileffmpeg.FFmpeg;
 import com.github.thibaultbee.srtdroid.Srt;
 import com.github.thibaultbee.srtdroid.enums.SockOpt;
+import com.github.thibaultbee.srtdroid.enums.Transtype;
 import com.github.thibaultbee.srtdroid.models.Socket;
 
 import java.io.PrintWriter;
@@ -61,22 +62,32 @@ public class MainActivity2 extends AppCompatActivity {
             Log.d("dddddddddd", "clientSocket is not valid");
             return;
         }
-        //clientSocket.setSockFlag(SockOpt.RCVSYN, true);
+        //clientSocket.setSockFlag(SockOpt.PASSPHRASE, "1234");
         //clientSocket.connect("192.168.43.50", 11001);
-        clientSocket.connect("192.168.43.50", 9001);
+
+
+
+        clientSocket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE);
+        //clientSocket.bind("192.168.1.101", 5000);
+        //clientSocket.listen(2);
+
+        clientSocket.connect("192.168.1.102", 5000);
+
         Log.d("dddddddddd", "client socket connected!");
 
         // create udp listening on 0.0.0.0:7800
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                byte[] data;
                 try{
-                    byte[] buffer = new byte[512];
+                    byte[] buffer = new byte[1316];
                     DatagramSocket socketUDP = new DatagramSocket(7800);
                     while(true){
                         DatagramPacket peticion = new DatagramPacket(buffer, buffer.length);
                         socketUDP.receive(peticion);
-                        byte[] data = peticion.getData();
+                        data = peticion.getData();
                         int ret = clientSocket.send(data);
                         //Log.d("dddddddd", "ret: " + ret);
                         String message = data[data.length-1] + "";
@@ -95,7 +106,7 @@ public class MainActivity2 extends AppCompatActivity {
 
 
         // start sending camera stream to 0.0.0.0:7800 by udp
-        int rc = FFmpeg.execute("-f android_camera -video_size hd720 -input_queue_size 60 -i 0:0 -r 30 -f h264 udp://0.0.0.0:7800");
+        int rc = FFmpeg.execute("-f android_camera -video_size hd720 -i 0:0 -r 30 -f h264 udp://0.0.0.0:7800?pkt_size=1316");
 
         if (rc == RETURN_CODE_SUCCESS) {
             Log.d(Config.TAG, "Command execution completed successfully.");

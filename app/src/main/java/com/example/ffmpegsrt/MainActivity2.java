@@ -68,12 +68,15 @@ public class MainActivity2 extends AppCompatActivity {
 
 
         clientSocket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE);
+
+
+
         //clientSocket.bind("192.168.1.101", 5000);
         //clientSocket.listen(2);
-
-        clientSocket.connect("192.168.1.102", 5000);
+        clientSocket.connect("192.168.43.50", 11001);
 
         Log.d("dddddddddd", "client socket connected!");
+        Log.d("dddddddddd", "PAYLOADSIZE: " + clientSocket.getSockFlag(SockOpt.PAYLOADSIZE));
 
         // create udp listening on 0.0.0.0:7800
         new Thread(new Runnable() {
@@ -88,10 +91,9 @@ public class MainActivity2 extends AppCompatActivity {
                         DatagramPacket peticion = new DatagramPacket(buffer, buffer.length);
                         socketUDP.receive(peticion);
                         data = peticion.getData();
+                        //Log.d("ddddddd", new String(data));
                         int ret = clientSocket.send(data);
                         //Log.d("dddddddd", "ret: " + ret);
-                        String message = data[data.length-1] + "";
-                        Log.d("dddddddd", message);
                     }
                 }catch (Exception ex){
                     StringWriter errors = new StringWriter();
@@ -102,11 +104,16 @@ public class MainActivity2 extends AppCompatActivity {
         }).start();
 
 
-
-
-
         // start sending camera stream to 0.0.0.0:7800 by udp
-        int rc = FFmpeg.execute("-f android_camera -video_size hd720 -i 0:0 -r 30 -f h264 udp://0.0.0.0:7800?pkt_size=1316");
+        //int rc = FFmpeg.execute("-f android_camera -video_size hd720 -i 0:0 -r 30 -f h264 udp://0.0.0.0:7800?pkt_size=1316");
+
+        // este comando anda bien con udp y ffplay
+        //int rc = FFmpeg.execute("-f android_camera -video_size 320x240 -input_queue_size 60 -i 0:0 -r 30 -f h264 udp://192.168.43.50:11002?pkt_size=1316");
+        //int rc = FFmpeg.execute("-f android_camera -video_size 320x240 -input_queue_size 60 -i 0:0 -r 30 -g 10 -f h264 udp://0.0.0.0:7800?pkt_size=1316");
+
+        //int rc = FFmpeg.execute("-f lavfi -re -i smptebars=duration=300:size=1280x720:rate=30 -f lavfi -re -i sine=frequency=1000:duration=60:sample_rate=44100 -pix_fmt yuv420p -c:v libx264 -b:v 1000k -g 30 -keyint_min 120 -profile:v baseline -preset veryfast -f mpegts \"udp://0.0.0.0:7800?pkt_size=1316\"");
+
+        int rc = FFmpeg.execute("-f android_camera -video_size 320x240 -input_queue_size 60 -i 0:0 -pix_fmt yuv420p -c:v libx264 -b:v 1000k -g 30 -keyint_min 120 -profile:v baseline -preset veryfast -f mpegts \"udp://0.0.0.0:7800?pkt_size=1316\"");
 
         if (rc == RETURN_CODE_SUCCESS) {
             Log.d(Config.TAG, "Command execution completed successfully.");
